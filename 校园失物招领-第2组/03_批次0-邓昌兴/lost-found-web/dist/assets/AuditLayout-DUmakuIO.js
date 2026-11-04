@@ -1,0 +1,1 @@
+import{A as t}from"./AppLayout-CRo2kDwD.js";import{d as e,o as a,n as o,h as n,p as s}from"./index-D_PCRR90.js";import"./_plugin-vue_export-helper-DlAUqK2U.js";const _=e({__name:"AuditLayout",setup(u){return(p,r)=>(a(),o(t,{title:"审核端","base-path":"/audit",menus:n(s)},null,8,["menus"]))}});export{_ as default};

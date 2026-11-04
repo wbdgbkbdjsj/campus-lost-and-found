@@ -1,0 +1,1 @@
+import{A as e}from"./AppLayout-CRo2kDwD.js";import{d as a,o as n,n as t,h as o,x as s}from"./index-D_PCRR90.js";import"./_plugin-vue_export-helper-DlAUqK2U.js";const _=a({__name:"AdminLayout",setup(m){return(r,p)=>(n(),t(e,{title:"后台端","base-path":"/admin",menus:o(s)},null,8,["menus"]))}});export{_ as default};
