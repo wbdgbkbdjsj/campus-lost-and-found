@@ -1,0 +1,36 @@
+{
+  "name": "lost-found-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "校园失物招领与认领审核系统 - 前端（单工程 RBAC 三端）",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{vue,ts,scss,json}\""
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "axios": "^1.7.9",
+    "echarts": "^5.5.1",
+    "element-plus": "^2.8.8",
+    "pinia": "^2.2.6",
+    "vue": "^3.5.13",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "eslint": "^8.57.1",
+    "eslint-plugin-vue": "^9.32.0",
+    "prettier": "^3.4.1",
+    "sass": "^1.83.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vue-tsc": "^2.1.10"
+  }
+}

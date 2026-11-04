@@ -1,0 +1,65 @@
+================================================================================
+校园失物招领与认领审核系统（第 2 组）· 冒烟测试执行记录
+================================================================================
+执行时间：2026-11-04 21:41:26
+执行人　：阴亮（组长，本机复跑验收）
+执行命令：cd 05_源码 && python smoke_test.py
+被测对象：B 端审核状态流原型（契约 v1，9 张表 / 8 态状态机 / 24 条已实现路由）
+运行环境：Python 3.13.14 | FastAPI 0.162.0 | SQLAlchemy 2.1.8 | Pydantic 2.14.2 | httpx 0.28.1 | Windows
+判定标准：24 项校验全部通过、失败 0 项即符合契约 v1
+--------------------------------------------------------------------------------
+================================================================================
+0) 三角色登录与字典（v1）
+[OK ] reviewer001 登录为 reviewer       -> 200 code=0 status=- detail=None
+[OK ] stu001 登录为 student             -> 200 code=0 status=- detail=None
+[OK ] super001 登录为 super_admin       -> 200 code=0 status=- detail=None
+[OK ] 分类字典                           -> 200 code=0 status=- detail=None
+[OK ] 地点字典                           -> 200 code=0 status=- detail=None
+================================================================================
+1) 队列与接单：SUBMITTED -> UNDER_REVIEW
+[OK ] 待审核队列                          -> 200 code=0 status=- detail=None
+[OK ] 学生访问队列(应40002)                 -> 400 code=40002 status=- detail=需要审核员(reviewer)权限
+[OK ] 超管访问队列(应40002)                 -> 400 code=40002 status=- detail=需要审核员(reviewer)权限
+[OK ] 接单 claim#1                     -> 200 code=0 status=UNDER_REVIEW detail=None
+================================================================================
+2) 退补回环：UNDER_REVIEW -> PENDING_INFO -> RESUBMIT -> UNDER_REVIEW
+[OK ] 退补缺 comment(应40003)            -> 400 code=40003 status=- detail=退回补充材料必须填写原因/意见
+[OK ] 退补 claim#2                     -> 200 code=0 status=PENDING_INFO detail=None
+[OK ] 申请人补充材料                        -> 200 code=0 status=UNDER_REVIEW detail=None
+================================================================================
+3) 通过 → 核验 → 交接：APPROVED 自环 VERIFY + I7 前置
+[OK ] 通过 claim#1                     -> 200 code=0 status=APPROVED detail=None
+[OK ] 未核验就交接(应40003-I7)              -> 400 code=40003 status=- detail=交接前必须先通过身份核验（POST /review/claims/{id}/verify）
+[OK ] 核验信息错误(verified=false)         -> 200 code=0 status=- detail=None
+[OK ] 核验通过(verified=true)            -> 200 code=0 status=- detail=None
+[OK ] 核验后交接                          -> 200 code=0 status=COMPLETED detail=None
+[OK ] 物品转 CLAIMED                    -> 200 code=0 status=CLAIMED detail=None
+================================================================================
+4) 终态封闭与非法迁移：应全部 40001
+[OK ] 重复通过(应40001)                   -> 400 code=40001 status=- detail=COMPLETED(已完成) 为终态，不允许事件 APPROVE
+[OK ] 已完成单撤销(应40001)                 -> 400 code=40001 status=- detail=COMPLETED(已完成) 为终态，不允许事件 CANCEL
+[OK ] 不存在单据(应40401)                  -> 404 code=40401 status=- detail=claim#999 不存在
+================================================================================
+5) 超时批处理：APPROVED 超期 -> EXPIRED
+[OK ] expire-run                     -> 200 code=0 status=- detail=None
+[OK ] claim#3 应 EXPIRED              -> 200 code=0 status=EXPIRED detail=None
+[OK ] 物品#3 回退 REGISTERED             -> 200 code=0 status=REGISTERED detail=None
+================================================================================
+6) 审核历史（含 VERIFY 流水，可追溯）
+    2026-11-04 21:41:23  None          --SUBMIT      --> SUBMITTED     | 申请人提交认领申请
+    2026-11-04 21:41:23  SUBMITTED     --ACCEPT      --> UNDER_REVIEW  | 
+    2026-11-04 21:41:23  UNDER_REVIEW  --APPROVE     --> APPROVED      | 凭证与物品一致
+    2026-11-04 21:41:23  APPROVED      --VERIFY      --> APPROVED      | 核验不通过：到场人 stu009/路人 与申请人 stu001/王小明 不一致
+    2026-11-04 21:41:23  APPROVED      --VERIFY      --> APPROVED      | 核验通过：学号/姓名与申请人一致
+    2026-11-04 21:41:23  APPROVED      --HANDOVER    --> COMPLETED     | 已核验学号，现场交接
+================================================================================
+结果：通过 24 项，失败 0 项。✅ 全流程符合契约 v1
+
+--------------------------------------------------------------------------------
+本次结论：通过 24 项，失败 0 项
+说明：本记录为组长在本机**重新实跑**所得，与李子研 17:05 首次实跑
+      （02-李子研/测试记录-smoke_test全绿输出.txt）结果一致，两次独立复现。
+      输出中的 Starlette/httpx 弃用告警来自依赖库，不影响测试结论，已过滤。
+用途：①《测试报告》第 4/5 节执行结果回填；②「软件测试 25 分」实证；
+      ③ 答辩现场「你们代码真能跑吗」的直接证据；④ 演示保底。
+================================================================================

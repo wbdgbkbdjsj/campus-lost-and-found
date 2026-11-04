@@ -1,0 +1,55 @@
+# 设计模型 02 — 认领单审核状态机图（v1）
+
+> 与 api-contract-v1.md §5 同源。实线=用户/审核员事件，虚线=系统超时事件。
+> v1 变更：角色 `admin`→`reviewer`；APPROVED 态新增 **VERIFY 自环**（身份核验独立接口，不改状态只写流水），并新增不变量 I7。
+
+```mermaid
+stateDiagram-v2
+    [*] --> SUBMITTED : POST /claims 提交申请
+
+    SUBMITTED --> UNDER_REVIEW : ACCEPT(审核员接单)
+    SUBMITTED --> REJECTED : REJECT(快速驳回, comment必填)
+    SUBMITTED --> CANCELLED : CANCEL(申请人撤销)
+
+    UNDER_REVIEW --> APPROVED : APPROVE(审核通过)
+    UNDER_REVIEW --> REJECTED : REJECT(驳回, comment必填)
+    UNDER_REVIEW --> PENDING_INFO : REQUEST_INFO(退回补充)
+    UNDER_REVIEW --> CANCELLED : CANCEL(申请人撤销)
+
+    PENDING_INFO --> UNDER_REVIEW : RESUBMIT(申请人补充材料)
+    PENDING_INFO --> CANCELLED : CANCEL(申请人撤销)
+    PENDING_INFO --> EXPIRED : EXPIRE(超期未补充, 系统定时)
+
+    APPROVED --> APPROVED : VERIFY(身份核验, 自环·只写流水)
+    APPROVED --> COMPLETED : HANDOVER(交接确认, 前置I7: VERIFY已通过)
+    APPROVED --> EXPIRED : EXPIRE(超期未领取, 默认7天)
+
+    REJECTED --> [*]
+    CANCELLED --> [*]
+    COMPLETED --> [*]
+    EXPIRED --> [*]
+```
+
+## 迁移不变量（代码实现必须满足）
+
+| # | 不变量 |
+|---|---|
+| I1 | 终态 REJECTED/CANCELLED/COMPLETED/EXPIRED 无出边，任何事件返回 40001 |
+| I2 | 每次迁移写一条 review_record(action, from_status, to_status, comment) |
+| I3 | APPROVE 后同一 found_item 不得再产生新的可推进认领单（物品转 PICKUP_PENDING） |
+| I4 | HANDOVER 时 found_item→CLAIMED，物品闭环 |
+| I5 | REJECT / REQUEST_INFO 的 comment 必填，缺省返回 40003 |
+| I6 | APPROVE / HANDOVER / VERIFY 仅限已接单的 reviewer 本人（越权 40002） |
+| I7 | **HANDOVER 前必须存在本单的 VERIFY 通过流水（身份核验防冒领），未核验返回 40003** |
+
+## 伴随动作表
+
+| 迁移 | 伴随动作 |
+|---|---|
+| →APPROVED | found_item.status=PICKUP_PENDING；通知申请人"审核通过，请7天内领取"，deadline=+7天 |
+| →PENDING_INFO | deadline=+7天；通知申请人补充凭证 |
+| VERIFY（自环） | 校验到场 student_no/name 与申请人一致；写 VERIFY 流水（from=to=APPROVED）；不一致记录 verified=false |
+| →COMPLETED | found_item.status=CLAIMED；通知双方交接完成 |
+| →REJECTED | 通知申请人驳回原因；found_item 回退 REGISTERED（可被其他认领单推进） |
+| →EXPIRED | 通知申请人；若为 APPROVED 超期，found_item 回退 REGISTERED |
+| →CANCELLED / →UNDER_REVIEW(RESUBMIT) | 通知对方当事人 |
