@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>校园失物招领与认领审核系统 · 产品宣传彩页（第 2 组）</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #eef2f7; color: #1e293b;
+    font-family: "Microsoft YaHei", "PingFang SC", "Source Han Sans SC", sans-serif;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .page {
+    width: 272.7mm; zoom: 0.77; margin: 0 auto; background: #ffffff;
+    overflow: hidden; position: relative;
+  }
+  /* ---------- 页眉 ---------- */
+  .hero {
+    background: linear-gradient(120deg, #17365d 0%, #1e4b83 58%, #2563a8 100%);
+    color: #fff; padding: 8mm 14mm 6mm; position: relative;
+  }
+  .hero::after {
+    content: ""; position: absolute; right: -18mm; top: -22mm;
+    width: 78mm; height: 78mm; border-radius: 50%;
+    background: rgba(255,255,255,.055);
+  }
+  .kicker { font-size: 8.5pt; letter-spacing: .22em; color: #b9d6f5; margin-bottom: 3mm; }
+  .hero h1 { font-size: 25pt; line-height: 1.25; letter-spacing: .02em; font-weight: 700; }
+  .hero .en { font-size: 8.5pt; color: #a8c8ea; margin-top: 2mm; letter-spacing: .04em; }
+  .hero .slogan {
+    margin-top: 4mm; font-size: 10.5pt; line-height: 1.6; color: #eaf3ff;
+    border-left: 1.2mm solid #6fb0ff; padding-left: 4mm; max-width: 165mm;
+  }
+  .hero .tags { margin-top: 3mm; display: flex; gap: 2.5mm; flex-wrap: wrap; }
+  .tag {
+    font-size: 8pt; padding: 1.4mm 3mm; border-radius: 2mm;
+    background: rgba(255,255,255,.13); border: .3mm solid rgba(255,255,255,.28);
+    color: #eaf3ff;
+  }
+  .badge {
+    position: absolute; right: 14mm; top: 11mm; text-align: right;
+    font-size: 8.5pt; color: #cfe3fa; line-height: 1.7; z-index: 2;
+  }
+  .badge b { display: block; font-size: 13pt; color: #fff; }
+
+  /* ---------- 通用区 ---------- */
+  .body { padding: 5mm 14mm 0; }
+  .sec { margin-bottom: 4mm; }
+  .sec-h { display: flex; align-items: baseline; gap: 3mm; margin-bottom: 2.5mm; }
+  .sec-h .no {
+    font-size: 9pt; font-weight: 700; color: #2563a8; letter-spacing: .08em;
+  }
+  .sec-h h2 { font-size: 12.5pt; color: #17365d; font-weight: 700; }
+  .sec-h .sub { font-size: 8pt; color: #64748b; margin-left: auto; }
+
+  /* ---------- 痛点 ---------- */
+  .pains { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+  .pain {
+    background: #f8fafc; border: .3mm solid #e2e8f0; border-radius: 2mm;
+    padding: 3.5mm 4mm; border-top: 1mm solid #94a3b8;
+  }
+  .pain .t { font-size: 9.5pt; font-weight: 700; color: #334155; margin-bottom: 1.5mm; }
+  .pain .d { font-size: 8pt; color: #64748b; line-height: 1.55; }
+
+  /* ---------- 三端 ---------- */
+  .roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+  .role {
+    border: .3mm solid #dbe4ef; border-radius: 2mm; padding: 3.5mm 4mm; background: #fff;
+  }
+  .role .code {
+    display: inline-block; font-size: 8pt; font-weight: 700; color: #fff;
+    background: #2563a8; border-radius: 1.2mm; padding: .8mm 2.4mm; margin-bottom: 2mm;
+  }
+  .role .t { font-size: 9.5pt; font-weight: 700; color: #17365d; margin-bottom: 1.5mm; }
+  .role ul { list-style: none; font-size: 8pt; color: #475569; line-height: 1.75; }
+  .role li::before { content: "· "; color: #2563a8; font-weight: 700; }
+
+  /* ---------- 亮点 ---------- */
+  .highlight {
+    background: #f1f7ff; border: .3mm solid #cfe0f5; border-radius: 2mm; padding: 2.5mm 3mm;
+  }
+  .highlight .lead { font-size: 9.5pt; color: #17365d; line-height: 1.6; margin-bottom: 2.5mm; }
+  .highlight .lead b { color: #1d4ed8; }
+  .flow { display: flex; align-items: center; gap: 1.4mm; flex-wrap: nowrap; }
+  .node {
+    flex: 1; text-align: center; background: #fff; border: .3mm solid #cbdcf0;
+    border-radius: 1.5mm; padding: 2.2mm 1mm; font-size: 7.4pt; color: #334155;
+    line-height: 1.4; min-height: 12mm;
+  }
+  .node.key { background: #2563a8; border-color: #2563a8; color: #fff; font-weight: 700; }
+  .node b { display: block; font-size: 8pt; margin-bottom: .6mm; }
+  .arw { font-size: 10pt; color: #7aa7da; flex: 0 0 auto; }
+  .i7 {
+    margin-top: 2.2mm; font-size: 7.8pt; color: #1e40af; background: #e3efff;
+    border-left: 1mm solid #2563a8; padding: 2mm 3mm; line-height: 1.6;
+  }
+
+  /* ---------- 界面 ---------- */
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+  .shot { border: .3mm solid #dbe4ef; border-radius: 2mm; overflow: hidden; background: #fff; }
+  .shot img { width: 100%; height: 27mm; object-fit: cover; object-position: top left; display: block; }
+  .shot .cap { font-size: 7.2pt; color: #475569; padding: 1.6mm 2mm; line-height: 1.4; }
+  .shot .cap b { color: #17365d; }
+
+  /* ---------- 规格 ---------- */
+  .specs { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .spec {
+    background: #f8fafc; border: .3mm solid #e2e8f0; border-radius: 2mm; padding: 3mm 4mm;
+  }
+  .spec .t { font-size: 9pt; font-weight: 700; color: #17365d; margin-bottom: 2mm; }
+  table { width: 100%; border-collapse: collapse; font-size: 7.8pt; }
+  td { padding: 1.1mm 0; color: #475569; vertical-align: top; line-height: 1.45; }
+  td:first-child { color: #94a3b8; width: 26mm; }
+  .note { font-size: 7.2pt; color: #94a3b8; line-height: 1.5; margin-top: 2mm; }
+
+  /* ---------- 页脚 ---------- */
+  .foot {
+    margin-top: 3mm; background: #17365d; color: #cfe0f5; padding: 4mm 14mm 4mm;
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm;
+  }
+  .foot .l { font-size: 8.5pt; line-height: 1.7; }
+  .foot .l b { color: #fff; font-size: 10pt; }
+  .foot .r { font-size: 7.5pt; text-align: right; line-height: 1.65; color: #a8c8ea; }
+  .foot .run {
+    display: inline-block; margin-top: 1.5mm; background: rgba(255,255,255,.12);
+    padding: 1.2mm 2.5mm; border-radius: 1.2mm; font-family: Consolas, monospace;
+    font-size: 7.4pt; color: #eaf3ff;
+  }
+  @media screen {
+    .page { box-shadow: 0 4px 28px rgba(15,35,60,.16); margin: 8mm auto; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="badge"><b>第 2 组</b>软件工程课程设计<br>2026 · 秋</div>
+    <div class="kicker">CAMPUS LOST &amp; FOUND · 产品宣传彩页</div>
+    <h1>校园失物招领与<br>认领审核系统</h1>
+    <div class="en">Campus Lost-and-Found &amp; Claim Verification System</div>
+    <div class="slogan">让每一件失物都有据可查，让每一次认领都经得起核验。<br>把「谁捡到、谁申请、谁审核、谁核验、谁取走」串成一条不可跳步的可追溯链路。</div>
+    <div class="tags">
+      <span class="tag">三端 RBAC</span><span class="tag">8 态状态机</span>
+      <span class="tag">I7 防冒领</span><span class="tag">全流程流水</span>
+      <span class="tag">契约驱动</span><span class="tag">24/24 测试通过</span>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <div class="sec">
+      <div class="sec-h"><span class="no">01</span><h2>我们解决什么</h2><span class="sub">真实校园场景 · 明确用户价值</span></div>
+      <div class="pains">
+        <div class="pain"><div class="t">找得慢、对不上</div><div class="d">失物信息散落在群聊与公告栏，分类、地点、时间没有统一口径，失主只能一条条翻。</div></div>
+        <div class="pain"><div class="t">冒领风险无人兜底</div><div class="d">「说得出特征」不等于「是本人」，线下交接缺一道身份核验，物品易被错领。</div></div>
+        <div class="pain"><div class="t">流程黑盒、责任不清</div><div class="d">谁接的单、为什么驳回、有没有核验过，事后无据可查，争议无法复盘。</div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><span class="no">02</span><h2>一个系统，三种角色</h2><span class="sub">单工程 + RBAC，不拆三套</span></div>
+      <div class="roles">
+        <div class="role"><span class="code">A · student</span><div class="t">学生端</div>
+          <ul><li>发布失物 / 招领登记</li><li>按分类、地点检索</li><li>提交认领申请与凭证</li><li>补充材料、查看结果</li></ul></div>
+        <div class="role"><span class="code">B · reviewer</span><div class="t">审核端</div>
+          <ul><li>待审核队列与接单</li><li>凭证比对、通过 / 退补</li><li>身份核验、线下交接</li><li>审核流水全程留痕</li></ul></div>
+        <div class="role"><span class="code">C · super_admin</span><div class="t">后台管理端</div>
+          <ul><li>用户与角色管理</li><li>分类 / 地点字典维护</li><li>审计日志与统计</li><li>超时批处理配置</li></ul></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><span class="no">03</span><h2>核心亮点：把核验做成硬约束</h2><span class="sub">不是页面，是状态机的不变量</span></div>
+      <div class="highlight">
+        <div class="lead">认领单定义 <b>8 个状态、12 条合法迁移、终态封闭</b>，非法迁移一律拒绝并回业务错误码；<b>身份核验是 APPROVED 自环</b>（状态不变、写 VERIFY 流水），交接前强制校验，跳步直接拦截。</div>
+        <div class="flow">
+          <div class="node"><b>提交</b>SUBMITTED</div><span class="arw">›</span>
+          <div class="node"><b>接单</b>UNDER_REVIEW</div><span class="arw">›</span>
+          <div class="node"><b>审核通过</b>APPROVED</div><span class="arw">›</span>
+          <div class="node key"><b>身份核验</b>VERIFY 自环</div><span class="arw">›</span>
+          <div class="node"><b>线下交接</b>COMPLETED</div>
+        </div>
+        <div class="i7"><b>不变量 I7：</b>未产生「核验通过」流水时调用交接接口，系统返回 40003「交接前必须先通过身份核验」；核验不通过同样留下流水，可追溯、可复盘。</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><span class="no">04</span><h2>真实运行界面</h2><span class="sub">浏览器实测截图 · 种子虚构数据</span></div>
+      <div class="shots">
+        <div class="shot"><img src="../02-李子研/05_源码/screenshots/02-A端招领列表.png" alt="A 端招领列表"><div class="cap"><b>A 端招领列表</b><br>分类 / 地点 / 状态检索</div></div>
+        <div class="shot"><img src="../02-李子研/05_源码/screenshots/04-未核验交接被I7拦截.png" alt="I7 拦截"><div class="cap"><b>I7 拦截</b><br>未核验交接返回 40003 并红显</div></div>
+        <div class="shot"><img src="../02-李子研/05_源码/screenshots/05-交接完成COMPLETED.png" alt="交接完成"><div class="cap"><b>交接完成</b><br>状态流转至 COMPLETED</div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><span class="no">05</span><h2>技术规格与验证</h2><span class="sub">如实标注实施边界</span></div>
+      <div class="specs">
+        <div class="spec"><div class="t">工程与数据</div>
+          <table>
+            <tr><td>业务可跑原型</td><td>FastAPI + SQLAlchemy + SQLite，9 张表 / 24 条路由</td></tr>
+            <tr><td>正式方案骨架</td><td>Vue3 + TS + Vite + Element Plus；Spring Boot 3.2.5 + MyBatis-Plus + JWT</td></tr>
+            <tr><td>接口契约</td><td>30 条 REST，按 A / B / C 三端分组，v1 冻结</td></tr>
+            <tr><td>演示前端</td><td>Vue3 零构建单页，无 CDN 依赖，可离线运行</td></tr>
+          </table></div>
+        <div class="spec"><div class="t">测试与证据</div>
+          <table>
+            <tr><td>后端冒烟</td><td>24 项断言，两次独立复现全绿、失败 0</td></tr>
+            <tr><td>浏览器端到端</td><td>15/15 通过，覆盖核验拦截与交接主链</td></tr>
+            <tr><td>状态机覆盖</td><td>8 态 / 12 合法迁移 / 终态封闭 / I1–I7</td></tr>
+            <tr><td>实施边界</td><td>C 端后台接口与正式 Spring Boot 业务层为骨架，按「构件对应、可平移」说明</td></tr>
+          </table>
+          <div class="note">界面截图中的数据均为种子虚构数据，不含真实个人信息。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <div class="l"><b>软件工程课程设计 · 第 2 组</b><br>
+      阴亮 · 李子研 · 金道轩 · 欧阳昊天 · 邓昌兴<br>
+      <span style="font-size:7.5pt;color:#a8c8ea">契约驱动并行开发 · 统一术语表 · 需求追踪矩阵 · Git 版本库</span></div>
+    <div class="r">本地运行<br><span class="run">cd 05_源码 &amp;&amp; python smoke_test.py</span><br>
+      <span class="run">uvicorn main:app --reload</span><br>
+      <span style="font-size:7.2pt">Web 端访问 · 无需安装桌面客户端</span></div>
+  </div>
+
+</div>
+</body>
+</html>
