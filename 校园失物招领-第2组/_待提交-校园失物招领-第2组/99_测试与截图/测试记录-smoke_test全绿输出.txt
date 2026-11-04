@@ -1,0 +1,46 @@
+================================================================================
+0) 三角色登录与字典（v1）
+[OK ] reviewer001 登录为 reviewer       -> 200 code=0 status=- detail=None
+[OK ] stu001 登录为 student             -> 200 code=0 status=- detail=None
+[OK ] super001 登录为 super_admin       -> 200 code=0 status=- detail=None
+[OK ] 分类字典                           -> 200 code=0 status=- detail=None
+[OK ] 地点字典                           -> 200 code=0 status=- detail=None
+================================================================================
+1) 队列与接单：SUBMITTED -> UNDER_REVIEW
+[OK ] 待审核队列                          -> 200 code=0 status=- detail=None
+[OK ] 学生访问队列(应40002)                 -> 400 code=40002 status=- detail=需要审核员(reviewer)权限
+[OK ] 超管访问队列(应40002)                 -> 400 code=40002 status=- detail=需要审核员(reviewer)权限
+[OK ] 接单 claim#1                     -> 200 code=0 status=UNDER_REVIEW detail=None
+================================================================================
+2) 退补回环：UNDER_REVIEW -> PENDING_INFO -> RESUBMIT -> UNDER_REVIEW
+[OK ] 退补缺 comment(应40003)            -> 400 code=40003 status=- detail=退回补充材料必须填写原因/意见
+[OK ] 退补 claim#2                     -> 200 code=0 status=PENDING_INFO detail=None
+[OK ] 申请人补充材料                        -> 200 code=0 status=UNDER_REVIEW detail=None
+================================================================================
+3) 通过 → 核验 → 交接：APPROVED 自环 VERIFY + I7 前置
+[OK ] 通过 claim#1                     -> 200 code=0 status=APPROVED detail=None
+[OK ] 未核验就交接(应40003-I7)              -> 400 code=40003 status=- detail=交接前必须先通过身份核验（POST /review/claims/{id}/verify）
+[OK ] 核验信息错误(verified=false)         -> 200 code=0 status=- detail=None
+[OK ] 核验通过(verified=true)            -> 200 code=0 status=- detail=None
+[OK ] 核验后交接                          -> 200 code=0 status=COMPLETED detail=None
+[OK ] 物品转 CLAIMED                    -> 200 code=0 status=CLAIMED detail=None
+================================================================================
+4) 终态封闭与非法迁移：应全部 40001
+[OK ] 重复通过(应40001)                   -> 400 code=40001 status=- detail=COMPLETED(已完成) 为终态，不允许事件 APPROVE
+[OK ] 已完成单撤销(应40001)                 -> 400 code=40001 status=- detail=COMPLETED(已完成) 为终态，不允许事件 CANCEL
+[OK ] 不存在单据(应40401)                  -> 404 code=40401 status=- detail=claim#999 不存在
+================================================================================
+5) 超时批处理：APPROVED 超期 -> EXPIRED
+[OK ] expire-run                     -> 200 code=0 status=- detail=None
+[OK ] claim#3 应 EXPIRED              -> 200 code=0 status=EXPIRED detail=None
+[OK ] 物品#3 回退 REGISTERED             -> 200 code=0 status=REGISTERED detail=None
+================================================================================
+6) 审核历史（含 VERIFY 流水，可追溯）
+    2026-11-04 17:05:27  None          --SUBMIT      --> SUBMITTED     | 申请人提交认领申请
+    2026-11-04 17:05:27  SUBMITTED     --ACCEPT      --> UNDER_REVIEW  | 
+    2026-11-04 17:05:27  UNDER_REVIEW  --APPROVE     --> APPROVED      | 凭证与物品一致
+    2026-11-04 17:05:27  APPROVED      --VERIFY      --> APPROVED      | 核验不通过：到场人 stu009/路人 与申请人 stu001/王小明 不一致
+    2026-11-04 17:05:27  APPROVED      --VERIFY      --> APPROVED      | 核验通过：学号/姓名与申请人一致
+    2026-11-04 17:05:27  APPROVED      --HANDOVER    --> COMPLETED     | 已核验学号，现场交接
+================================================================================
+结果：通过 24 项，失败 0 项。✅ 全流程符合契约 v1

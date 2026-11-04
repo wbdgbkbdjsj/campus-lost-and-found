@@ -1,0 +1,1 @@
+【契约解冻→重冻结】@全体 api-contract 由 v0 升级到 v1 并重新冻结：①角色改为 student/reviewer/super_admin（admin 代号废弃，C 端与三端整合请以 v1 为准）；②新增 category/location 两张字典表，共 9 张；③接口按 A/B/C 三端分组共 30 条，新增身份核验接口 POST /review/claims/{id}/verify，交接前必须先核验（不变量 I7）；④契约内已内嵌 ER 图/状态机图/三端对照表。本条即冻结声明，之后改动需群里重新声明。变更明细见 api-contract-v1.md 文件头。

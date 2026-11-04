@@ -1,0 +1,27 @@
+【全组·分工文件夹与代码口径对齐】@全体
+
+一、唯一正式工程根目录，只认这两个（邓昌兴批次 0 骨架，已能 npm build / mvn compile）：
+  lost-found-web/     Vue3+TS 单工程 RBAC 三端
+  lost-found-server/  Spring Boot 3.2.5 分模块
+其余目录都只是个人工作区：桌面 02-李子研/05_源码 是「演示原型·答辩保底」，标注附录、不合并进主工程；v0 旧包一律作废。请各人把自己的产出拷进对应子目录，别再另起一份工程。
+
+二、目录归属（只改自己目录，公共层统一由邓昌兴改）：
+  @邓昌兴  src/{api,components,layouts,router,stores,types,utils}、views/login、views/error；后端 common/config/security、module/auth、module/file；三份骨架文档
+  @金道轩  src/views/student/**（A 端 8 页）、后端 module/item/**
+  @李子研  src/views/audit/**（B 端 6 页）、后端 module/claim + module/audit、sql/02-schema.sql（9 张表）、api-contract-v1.md
+  @欧阳昊天 src/views/admin/**（C 端 9 页）、后端 module/{user,category,notice,log,admin}、sql/03-data.sql、测试报告与 PPT
+  接口/字段/状态有疑问一律以 api-contract-v1.md 为准，问李子研，不要自己发明。
+
+三、合并前邓昌兴先统一改公共层 5 处（改完再通知三端合并，别各改各的）：
+  1 角色码 STUDENT/AUDITOR/ADMIN → student/reviewer/super_admin
+  2 成功码 code=200 → code=0（错误码 40001/40002/40003/40401/40101）
+  3 前缀 /api + /items、/audit/* → /api/v1 + /found-items、/lost-items、/claims、/review/*
+  4 包名/公共类口径（建议保留 com.campus.lostfound + Result，等欧阳代码到手再定）
+  5 补 9 张表实体类型 / types/business.ts / src/api/*.ts 路径
+另外骨架里有 106 个「xxx (1).ext」重复副本，请邓本人确认后清掉，否则 Java 会报重复类。
+
+四、B 端口径以契约 v1 为准：邓《页面清单》§3 里的「发布审核」契约里没有（拾获物品直接 REGISTERED），且缺 verify 身份核验 / request-info 退补 / expire-run 超时。请邓改页面清单与 api/audit.ts，李子研按 8 态 12 迁移实现（含 I7 交接前必须核验）。C 端 C4–C9 契约无对应接口，建议按页面清单 §8 裁剪，只保 P0 的 C1–C3；要全做需重新解冻契约，属组长拍板项。
+
+五、顺序不变：Gate 0 的「术语表 v1 + 需求说明书 FR-01~16」仍由阴亮/组长发，未到账前金/欧的文档、演示脚本、PPT 页内文字不要开工；代码层可按已冻结的契约 v1 先行。v1 群公告与本公告同批发，但公告不代替那两份前置。
+
+详细对照见《分工文件夹与代码归属总表.md》（含 9 处口径差、归位规则、合并 Gate、待拍板 4 项）。
