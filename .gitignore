@@ -9,6 +9,18 @@ __pycache__/
 .venv/
 venv/
 
+# Java / Maven（邓昌兴 lost-found-server）
+target/
+*.class
+*.jar
+*.war
+
+# Node / Vue（邓昌兴 lost-found-web）
+node_modules/
+dist/
+.vite/
+*.local
+
 # 编辑器 / 系统
 .vscode/
 .idea/
