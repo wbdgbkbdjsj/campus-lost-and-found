@@ -2,9 +2,10 @@
 /**
  * C7 操作日志
  *
- * GET /admin/audit-logs（契约 #29）支持 page / size。
- * 日志是系统所有写操作的留痕：认领流转、账号启停、字典新增都会写一条。
- * 契约没有按实体 / 按操作人过滤的参数，所以筛选放本地，页面标注清楚。
+ * GET /admin/audit-logs（契约 #29）支持 entity / page / size 三个参数，
+ * entity 走后端过滤（取值固定为 claim / user / category / location / system，
+ * 与后端 write_audit 调用处一致）。
+ * action 没有对应的查询参数，只能在本页内筛选，页面已标注。
  */
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
@@ -16,20 +17,25 @@ import { useTable } from '@/composables/useTable'
 import type { AuditLog } from '@/types'
 import { formatTime } from '@/utils/status'
 
-const logs = useTable<AuditLog>((params) => pageAuditLogs(params), { keyword: '' })
+const logs = useTable<AuditLog>((params) => pageAuditLogs(params), { entity: '' })
 
-const entityFilter = ref('')
 const actionFilter = ref('')
 const drawerVisible = ref(false)
 const current = ref<AuditLog | null>(null)
 
-const entityOptions = computed(() => Array.from(new Set(logs.list.value.map((one) => one.entity))))
+/** 后端 write_audit 只写这五类实体，写死下拉省一次全表扫描 */
+const ENTITY_OPTIONS = [
+  { value: 'claim', label: 'claim（认领单）' },
+  { value: 'user', label: 'user（用户）' },
+  { value: 'category', label: 'category（分类）' },
+  { value: 'location', label: 'location（地点）' },
+  { value: 'system', label: 'system（系统）' }
+]
 
 const actionOptions = computed(() => Array.from(new Set(logs.list.value.map((one) => one.action))))
 
 const filteredList = computed(() =>
   logs.list.value.filter((row) => {
-    if (entityFilter.value && row.entity !== entityFilter.value) return false
     if (actionFilter.value && row.action !== actionFilter.value) return false
     return true
   })
@@ -43,6 +49,12 @@ const entitySummary = computed(() => {
   })
   return Object.entries(map).sort((a, b) => b[1] - a[1])
 })
+
+/** 实体变化要走后端重新查询（page 回到 1） */
+function onEntityChange() {
+  actionFilter.value = ''
+  logs.search()
+}
 
 function actionTagType(action: string) {
   const text = action.toUpperCase()
@@ -87,11 +99,6 @@ function exportCurrentPage() {
   ElMessage.success('当前页日志已导出')
 }
 
-function resetFilters() {
-  entityFilter.value = ''
-  actionFilter.value = ''
-}
-
 onMounted(logs.load)
 </script>
 
@@ -120,23 +127,24 @@ onMounted(logs.load)
     <div class="page-card">
       <div class="toolbar">
         <el-select
-          v-model="entityFilter"
+          v-model="logs.query.value.entity"
           placeholder="全部实体"
           clearable
-          style="width: 150px"
+          style="width: 190px"
+          @change="onEntityChange"
         >
           <el-option
-            v-for="entity in entityOptions"
-            :key="entity"
-            :label="entity"
-            :value="entity"
+            v-for="item in ENTITY_OPTIONS"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
           />
         </el-select>
         <el-select
           v-model="actionFilter"
           placeholder="全部操作"
           clearable
-          style="width: 150px"
+          style="width: 160px"
         >
           <el-option
             v-for="action in actionOptions"
@@ -147,11 +155,11 @@ onMounted(logs.load)
         </el-select>
         <el-button
           text
-          @click="resetFilters"
+          @click="actionFilter = ''"
         >
-          重置
+          重置操作筛选
         </el-button>
-        <span class="hint">实体与操作为本页本地筛选</span>
+        <span class="hint">实体走后端过滤，操作为本页本地筛选</span>
       </div>
 
       <div class="summary-row">
