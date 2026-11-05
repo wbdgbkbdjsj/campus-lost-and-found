@@ -13,12 +13,12 @@ const auth = useAuthStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const form = reactive({
-  username: '',
+  student_no: '',
   password: ''
 })
 
 const rules: FormRules = {
-  username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+  student_no: [{ required: true, message: '请输入学号', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 }
 
@@ -30,7 +30,7 @@ async function handleLogin() {
   loading.value = true
   try {
     const user = await auth.login(form)
-    ElMessage.success(`欢迎，${user.nickname || user.username}`)
+    ElMessage.success(`欢迎，${user.name}`)
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : ''
     await router.replace(redirect || ROLE_HOME[user.role] || '/404')
   } finally {
@@ -58,12 +58,12 @@ async function handleLogin() {
         @keyup.enter="handleLogin"
       >
         <el-form-item
-          label="账号"
-          prop="username"
+          label="学号"
+          prop="student_no"
         >
           <el-input
-            v-model="form.username"
-            placeholder="请输入账号"
+            v-model="form.student_no"
+            placeholder="请输入学号"
             :prefix-icon="User"
           />
         </el-form-item>
@@ -92,7 +92,7 @@ async function handleLogin() {
       </el-form>
 
       <div class="login-tip">
-        演示账号待后端用户模块完成后补充
+        演示账号：stu001 / reviewer001 / super001，口令均为 123456
       </div>
     </el-card>
   </div>
