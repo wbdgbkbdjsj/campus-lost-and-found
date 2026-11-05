@@ -167,7 +167,7 @@
         <div class="role"><span class="code">B · reviewer</span><div class="t">审核端</div>
           <ul><li>待审核队列与接单</li><li>凭证比对、通过 / 退补</li><li>身份核验、线下交接</li><li>审核流水全程留痕</li></ul></div>
         <div class="role"><span class="code">C · super_admin</span><div class="t">后台管理端</div>
-          <ul><li>用户与角色管理</li><li>分类 / 地点字典维护</li><li>审计日志与统计</li><li>超时批处理配置</li></ul></div>
+          <ul><li>用户与角色管理</li><li>分类 / 地点字典维护</li><li>审计日志与统计看板</li><li>认领单 Excel 导出</li></ul></div>
       </div>
     </div>
 
@@ -189,7 +189,7 @@
     <div class="sec">
       <div class="sec-h"><span class="no">04</span><h2>真实运行界面</h2><span class="sub">浏览器实测截图 · 种子虚构数据</span></div>
       <div class="shots">
-        <div class="shot"><img src="../02-李子研/05_源码/screenshots/02-A端招领列表.png" alt="A 端招领列表"><div class="cap"><b>A 端招领列表</b><br>分类 / 地点 / 状态检索</div></div>
+        <div class="shot"><img src="../02-李子研/05_源码/screenshots/02-A端招领列表.png" alt="A 端招领列表"><div class="cap"><b>A 端招领列表</b><br>关键词 / 分类 / 地点检索</div></div>
         <div class="shot"><img src="../02-李子研/05_源码/screenshots/04-未核验交接被I7拦截.png" alt="I7 拦截"><div class="cap"><b>I7 拦截</b><br>未核验交接返回 40003 并红显</div></div>
         <div class="shot"><img src="../02-李子研/05_源码/screenshots/05-交接完成COMPLETED.png" alt="交接完成"><div class="cap"><b>交接完成</b><br>状态流转至 COMPLETED</div></div>
       </div>
@@ -223,8 +223,8 @@
     <div class="l"><b>软件工程课程设计 · 第 2 组</b><br>
       阴亮 · 李子研 · 金道轩 · 欧阳昊天 · 邓昌兴<br>
       <span style="font-size:7.5pt;color:#a8c8ea">契约驱动并行开发 · 统一术语表 · 需求追踪矩阵 · Git 版本库</span></div>
-    <div class="r">本地运行<br><span class="run">cd 05_源码 &amp;&amp; python smoke_test.py</span><br>
-      <span class="run">uvicorn main:app --reload</span><br>
+    <div class="r">本地运行<br><span class="run">cd src/lost-found-prototype</span><br>
+      <span class="run">python smoke_test.py ｜ uvicorn main:app --reload</span><br>
       <span style="font-size:7.2pt">Web 端访问 · 无需安装桌面客户端</span></div>
   </div>
 
