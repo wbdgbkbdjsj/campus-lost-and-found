@@ -1,1 +1,0 @@
-import{A as t}from"./AppLayout-CRo2kDwD.js";import{d as e,o as n,n as s,h as a,s as o}from"./index-D_PCRR90.js";import"./_plugin-vue_export-helper-DlAUqK2U.js";const d=e({__name:"StudentLayout",setup(u){return(r,p)=>(n(),s(t,{title:"学生端","base-path":"/student",menus:a(o)},null,8,["menus"]))}});export{d as default};
