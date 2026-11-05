@@ -1,6 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router'
 import type { MenuItem } from '@/types'
-import { ROLE_SUPER_ADMIN } from '@/utils/constants'
+
+export const ADMIN_ROLE = 'ADMIN'
 
 const children: RouteRecordRaw[] = [
   {
@@ -72,7 +73,7 @@ const adminRoutes: RouteRecordRaw[] = [
     path: '/admin',
     component: () => import('@/layouts/AdminLayout.vue'),
     redirect: '/admin/dashboard',
-    meta: { roles: [ROLE_SUPER_ADMIN] },
+    meta: { roles: [ADMIN_ROLE] },
     children
   }
 ]

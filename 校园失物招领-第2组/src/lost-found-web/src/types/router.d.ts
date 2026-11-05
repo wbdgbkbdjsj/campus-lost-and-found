@@ -6,7 +6,7 @@ declare module 'vue-router' {
     title?: string
     /** Element Plus 图标组件名 */
     icon?: string
-    /** 允许访问的角色码（契约 v1）：student / reviewer / super_admin */
+    /** 允许访问的角色码：STUDENT / AUDITOR / ADMIN */
     roles?: string[]
     /** 白名单页面（登录、404），不需要登录 */
     public?: boolean

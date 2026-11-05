@@ -2,7 +2,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { LoginResult, LoginUser } from '@/types'
 import { TOKEN_KEY, USER_KEY } from '@/utils/constants'
-import { login as loginApi, type LoginPayload } from '@/api/auth'
+import { login as loginApi } from '@/api/auth'
 
 function readStoredUser(): LoginUser | null {
   const raw = localStorage.getItem(USER_KEY)
@@ -21,9 +21,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isLogin = computed(() => Boolean(token.value))
   const role = computed(() => user.value?.role ?? '')
-  const displayName = computed(() => user.value?.name || user.value?.student_no || '未登录')
+  const displayName = computed(() => user.value?.nickname || user.value?.username || '未登录')
 
-  async function login(payload: LoginPayload) {
+  async function login(payload: { username: string; password: string }) {
     const result = await loginApi(payload)
     setLoginState(result)
     return result.user
@@ -36,7 +36,6 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem(USER_KEY, JSON.stringify(result.user))
   }
 
-  /** 原型无 logout 接口，只清理本地登录态 */
   function logout() {
     token.value = ''
     user.value = null

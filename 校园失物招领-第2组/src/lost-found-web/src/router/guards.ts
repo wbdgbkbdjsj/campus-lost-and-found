@@ -4,8 +4,7 @@ import { ROLE_HOME } from '@/utils/constants'
 
 /**
  * 全局前置守卫：登录校验 + 角色隔离 + 页面标题。
- * 角色码统一取自 utils/constants（student / reviewer / super_admin，契约 v1）。
- * 注意：前端守卫只负责体验，真正的权限边界在后端。
+ * 注意：前端守卫只负责体验，真正的权限边界在后端 @PreAuthorize。
  */
 export function setupRouterGuards(router: Router) {
   router.beforeEach((to) => {

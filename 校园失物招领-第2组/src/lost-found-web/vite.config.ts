@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
-// 开发期：前端 5173；/api 代理到 FastAPI 原型 8000，并重写为 /api/v1（契约 v1 前缀）
+// 开发期：前端 5173，/api 代理到后端 8080（后端 context-path 也是 /api）
 export default defineConfig({
   plugins: [vue()],
   resolve: {
@@ -15,9 +15,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api/v1')
+        target: 'http://localhost:8080',
+        changeOrigin: true
       }
     }
   },

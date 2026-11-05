@@ -4,16 +4,11 @@ import type { ApiResult } from '@/types'
 import { TOKEN_KEY, USER_KEY } from './constants'
 
 /**
- * 统一请求封装（契约 v1）。
+ * 统一请求封装。
  * - 自动带 Bearer Token
  * - 统一解包 { code, message, data }，页面直接拿 data
- * - 成功码是 0（不是 200）
- * - 未登录码 40101（HTTP 401），统一清理登录态并回登录页
- * - 错误提示优先取 detail，回退 message
+ * - 401 统一清理登录态并回登录页
  */
-const SUCCESS_CODE = 0
-const UNAUTHORIZED_CODES = new Set([401, 40101])
-
 const service = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 15000
@@ -32,14 +27,12 @@ service.interceptors.response.use(
     const body = response.data as ApiResult<unknown>
     // 兼容文件下载等非标准响应
     if (body && typeof body === 'object' && 'code' in body) {
-      if (body.code !== SUCCESS_CODE) {
-        const message = body.detail || body.message || '请求失败'
-        if (UNAUTHORIZED_CODES.has(body.code)) {
+      if (body.code !== 200) {
+        ElMessage.error(body.message || '请求失败')
+        if (body.code === 401) {
           redirectToLogin()
-        } else {
-          ElMessage.error(message)
         }
-        return Promise.reject(new Error(message))
+        return Promise.reject(new Error(body.message || '请求失败'))
       }
       return body.data as never
     }
@@ -47,9 +40,8 @@ service.interceptors.response.use(
   },
   (error) => {
     const status = error?.response?.status
-    const data = error?.response?.data as ApiResult<unknown> | undefined
-    const message = data?.detail || data?.message || error?.message || '网络异常，请稍后重试'
-    if (status === 401 || UNAUTHORIZED_CODES.has(data?.code ?? -1)) {
+    const message = error?.response?.data?.message || error?.message || '网络异常，请稍后重试'
+    if (status === 401) {
       redirectToLogin()
     } else {
       ElMessage.error(message)
