@@ -10,7 +10,7 @@
  *     中文原因在 detail。页面把 code + message + detail 原样并列显示，
  *     因此「未核验点交接」会红字显示 40003 与「交接前必须先通过身份核验…」。
  *  3. 状态码与中文名并列显示；中文名仅作展示文案，不参与判断。
- *  4. C 端只做占位说明，不编造假数据（契约 #25-30 属欧阳昊天范围）。
+ *  4. C 端后台管理端按契约 #25-30 实现（用户/字典/统计/日志），原型内可直接演示管理员权限最多。
  */
 (function () {
   'use strict';
@@ -34,7 +34,7 @@
     REJECT: '驳回', REQUEST_INFO: '退回补充材料', RESUBMIT: '补充材料',
     HANDOVER: '确认交接', CANCEL: '撤销申请', EXPIRE: '超时失效（系统）'
   };
-  var ROLE_TEXT = { student: '学生（A 端）', reviewer: '审核员（B 端）', super_admin: '超级管理员（C 端占位）' };
+  var ROLE_TEXT = { student: '学生（A 端）', reviewer: '审核员（B 端）', super_admin: '超级管理员（C 端）' };
   var REVIEWER_EVENTS = ['ACCEPT', 'APPROVE', 'REJECT', 'REQUEST_INFO', 'HANDOVER'];
   var STUDENT_EVENTS = ['CANCEL', 'RESUBMIT'];
 
@@ -105,7 +105,13 @@
         openIdInput: '',
         actionComment: '', supplementProof: '',
         verifyForm: { student_no: '', name: '' }, verifyResult: null,
-        notifications: []
+        notifications: [],
+        // C · 后台管理（管理员权限最多）
+        adminStats: null,
+        adminUsers: [], userKeyword: '',
+        adminCategories: [], catForm: { name: '', sort_order: 0 },
+        adminLocations: [], locForm: { name: '', sort_order: 0 },
+        adminLogs: [], logEntity: ''
       };
     },
 
@@ -128,7 +134,13 @@
           { key: 'handover', label: '交接确认', step: '演示步 13' },
           { key: 'notifications', label: '流水与通知', step: '演示步 15' }
         ];
-        return [{ key: 'backend', label: '后台管理（占位）', step: '契约 #25-30' }];
+        return [
+          { key: 'adminDashboard', label: '数据看板', step: '契约 #29' },
+          { key: 'adminUsers', label: '用户管理', step: '契约 #25-26' },
+          { key: 'adminCategories', label: '分类字典维护', step: '契约 #27' },
+          { key: 'adminLocations', label: '地点字典维护', step: '契约 #28' },
+          { key: 'adminLogs', label: '操作日志', step: '契约 #30' }
+        ];
       },
       allowed: function () {
         return (this.claim && this.claim.allowed_events) ? this.claim.allowed_events : [];
@@ -216,6 +228,11 @@
         else if (view === 'myClaims') await this.loadMyClaims();
         else if (view === 'queue') await this.loadQueue();
         else if (view === 'notifications') await this.loadNotifications();
+        else if (view === 'adminDashboard') await this.loadAdminStats();
+        else if (view === 'adminUsers') await this.loadAdminUsers();
+        else if (view === 'adminCategories') await this.loadAdminCategories();
+        else if (view === 'adminLocations') await this.loadAdminLocations();
+        else if (view === 'adminLogs') await this.loadAdminLogs();
         else if (view === 'claimDetail' || view === 'verify' || view === 'handover') {
           if (this.claimId) await this.loadClaim(this.claimId);
         }
@@ -432,6 +449,91 @@
         var d = await this.call('/notifications');
         if (d) this.notifications = d.items;
         if (this.claimId) await this.loadClaim(this.claimId);
+      },
+
+      // ---------- C · 后台管理（契约 #25-30，管理员权限最多） ----------
+      loadAdminStats: async function () {
+        var d = await this.call('/admin/stats/overview');
+        if (d) this.adminStats = d;
+      },
+
+      loadAdminUsers: async function () {
+        var q = '?keyword=' + encodeURIComponent(this.userKeyword) + '&page=1&size=50';
+        var d = await this.call('/admin/users' + q);
+        if (d) this.adminUsers = d.items;
+      },
+
+      setUserStatus: async function (u, status) {
+        var d = await this.call('/admin/users/' + u.id + '/status', {
+          method: 'PUT', body: { status: status }
+        });
+        if (d) {
+          u.status = d.status;
+          this.notice = '账号 ' + u.student_no + ' 已' + (status === 'DISABLED' ? '停用' : '启用');
+        }
+      },
+
+      loadAdminCategories: async function () {
+        var d = await this.call('/admin/dict/categories');
+        if (d) this.adminCategories = d;
+      },
+
+      addCategory: async function () {
+        if (!this.catForm.name.trim()) { this.setFrontError('分类名称不能为空'); return; }
+        var d = await this.call('/admin/dict/categories', {
+          method: 'POST',
+          body: { name: this.catForm.name.trim(), sort_order: Number(this.catForm.sort_order) || 0 }
+        });
+        if (d) {
+          this.catForm = { name: '', sort_order: 0 };
+          await this.loadAdminCategories();
+          this.notice = '分类已新增：' + d.name;
+        }
+      },
+
+      loadAdminLocations: async function () {
+        var d = await this.call('/admin/dict/locations');
+        if (d) this.adminLocations = d;
+      },
+
+      addLocation: async function () {
+        if (!this.locForm.name.trim()) { this.setFrontError('地点名称不能为空'); return; }
+        var d = await this.call('/admin/dict/locations', {
+          method: 'POST',
+          body: { name: this.locForm.name.trim(), sort_order: Number(this.locForm.sort_order) || 0 }
+        });
+        if (d) {
+          this.locForm = { name: '', sort_order: 0 };
+          await this.loadAdminLocations();
+          this.notice = '地点已新增：' + d.name;
+        }
+      },
+
+      loadAdminLogs: async function () {
+        var q = this.logEntity ? '?entity=' + encodeURIComponent(this.logEntity) : '';
+        var d = await this.call('/admin/audit-logs' + q);
+        if (d) this.adminLogs = d.items;
+      },
+
+      exportClaims: async function () {
+        try {
+          var resp = await fetch(API + '/admin/export/claims.csv', {
+            headers: { 'Authorization': 'Bearer ' + this.token }
+          });
+          if (!resp.ok) {
+            this.error = { code: resp.status, message: 'EXPORT_FAILED', detail: '导出失败：HTTP ' + resp.status };
+            return;
+          }
+          var blob = await resp.blob();
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url; a.download = 'claims.csv';
+          document.body.appendChild(a); a.click();
+          document.body.removeChild(a); URL.revokeObjectURL(url);
+          this.notice = '认领单已导出为 CSV';
+        } catch (e) {
+          this.error = { code: 'NETWORK', message: 'EXPORT_FAILED', detail: e.message };
+        }
       }
     },
 
@@ -477,7 +579,7 @@
           <button @click="fillSeed('stu001')">stu001 学生 A 端</button>
           <button @click="fillSeed('stu002')">stu002 学生 A 端</button>
           <button @click="fillSeed('reviewer001')">reviewer001 审核 B 端</button>
-          <button @click="fillSeed('super001')">super001 C 端占位</button>
+          <button @click="fillSeed('super001')">super001 C 端管理</button>
         </div>
         <div class="small muted" style="margin-top:12px">
           角色值只有 <span class="mono">student / reviewer / super_admin</span>，<span class="mono">admin</span> 已废弃。
@@ -897,18 +999,144 @@
         </div>
       </section>
 
-      <!-- ============ 11. C · 占位页（不放假数据） ============ -->
-      <section v-if="view === 'backend'">
-        <h2>后台管理端</h2>
-        <p class="sub">契约 #25-30 · 欧阳昊天实现范围</p>
+      <!-- ============ 11. C · 数据看板（契约 #29，管理员权限最多） ============ -->
+      <section v-if="view === 'adminDashboard'">
+        <h2>数据看板</h2>
+        <p class="sub">契约 #29 · <span class="mono">GET /admin/stats/overview</span> · 管理员可见全局统计</p>
+        <div class="card" v-if="adminStats">
+          <h3>用户（共 {{ adminStats.users.total }} 人）</h3>
+          <div class="stat-grid">
+            <div class="stat"><b>{{ adminStats.users.student }}</b><span>学生</span></div>
+            <div class="stat"><b>{{ adminStats.users.reviewer }}</b><span>审核员</span></div>
+            <div class="stat"><b>{{ adminStats.users.admin }}</b><span>管理员</span></div>
+            <div class="stat"><b>{{ adminStats.users.disabled }}</b><span>已停用</span></div>
+          </div>
+          <h3>物品</h3>
+          <div class="stat-grid">
+            <div class="stat"><b>{{ adminStats.items.found_total }}</b><span>招领登记</span></div>
+            <div class="stat"><b>{{ adminStats.items.lost_total }}</b><span>失物登记</span></div>
+            <div class="stat"><b>{{ adminStats.items.found_claimed }}</b><span>已认领</span></div>
+            <div class="stat"><b>{{ adminStats.items.found_registered }}</b><span>待认领</span></div>
+          </div>
+          <h3>认领单（共 {{ adminStats.claims.total }} 单）</h3>
+          <div class="stat-grid">
+            <div class="stat"><b>{{ adminStats.claims.completed }}</b><span>已完成</span></div>
+            <div class="stat"><b>{{ adminStats.claims.pending }}</b><span>待处理</span></div>
+            <div class="stat"><b>{{ adminStats.claims.expired }}</b><span>已超时</span></div>
+            <div class="stat"><b>{{ adminStats.audit_total }}</b><span>审计条数</span></div>
+          </div>
+          <h3>关键指标</h3>
+          <div class="stat-grid">
+            <div class="stat"><b>{{ adminStats.rates.completion_rate }}%</b><span>完成率</span></div>
+            <div class="stat"><b>{{ adminStats.rates.timeout_rate }}%</b><span>超时率</span></div>
+            <div class="stat"><b>{{ adminStats.rates.avg_review_minutes }}</b><span>平均审核(分)</span></div>
+          </div>
+          <div class="notice-box" style="margin-bottom:0">各状态计数：<span class="code">{{ JSON.stringify(adminStats.claims.by_status) }}</span></div>
+        </div>
+        <div class="empty" v-else>正在加载统计…</div>
+      </section>
+
+      <!-- ============ 12. C · 用户管理（契约 #25-26） ============ -->
+      <section v-if="view === 'adminUsers'">
+        <h2>用户管理</h2>
+        <p class="sub">契约 #25-26 · <span class="mono">GET /admin/users</span>、<span class="mono">PUT /admin/users/{id}/status</span> · 启用 / 停用账号</p>
         <div class="card">
-          <h3>后台管理端：契约 #25–30 已设计，原型未实现</h3>
-          <p>本演示原型只覆盖 A 学生端与 B 审核端的状态流。后台管理端的用户管理、字典维护、统计看板、日志查询、Excel 导出等能力已在
-             <span class="mono">api-contract-v1.md §3.4</span> 中完成接口设计，由欧阳昊天在 C 端实现，本页不提供任何模拟数据。</p>
-          <div class="notice-box amber" style="margin-bottom:0">
-            角色 <span class="mono">super_admin</span> 登录后仅能看到本占位页，不会展示 A/B 端业务数据。
+          <div class="btn-row" style="margin-top:0">
+            <input v-model="userKeyword" placeholder="按学号 / 姓名检索" style="flex:1;min-width:200px;border:1px solid #bcc7d6;border-radius:5px;padding:9px 11px" @keyup.enter="loadAdminUsers">
+            <button class="btn" @click="loadAdminUsers">查询</button>
+            <button class="btn gray" @click="userKeyword='';loadAdminUsers()">清空</button>
           </div>
         </div>
+        <div class="table-wrap" v-if="adminUsers.length">
+          <table>
+            <thead><tr><th>ID</th><th>学号</th><th>姓名</th><th>角色</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr v-for="u in adminUsers" :key="u.id">
+                <td>#{{ u.id }}</td><td>{{ u.student_no }}</td><td>{{ u.name }}</td>
+                <td><span class="tag" :class="u.role === 'super_admin' ? 'tag-purple' : (u.role === 'reviewer' ? 'tag-blue' : 'tag-gray')">{{ u.role }}</span></td>
+                <td><span class="tag" :class="u.status === 'ACTIVE' ? 'tag-green' : 'tag-red'">{{ u.status }}</span></td>
+                <td class="nowrap">
+                  <button class="btn ghost" style="padding:5px 10px" v-if="u.status === 'ACTIVE'" @click="setUserStatus(u,'DISABLED')">停用</button>
+                  <button class="btn" style="padding:5px 10px" v-else @click="setUserStatus(u,'ACTIVE')">启用</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty" v-else>无匹配用户。</div>
+      </section>
+
+      <!-- ============ 13. C · 分类字典维护（契约 #27） ============ -->
+      <section v-if="view === 'adminCategories'">
+        <h2>分类字典维护</h2>
+        <p class="sub">契约 #27 · <span class="mono">GET / POST /admin/dict/categories</span></p>
+        <div class="card">
+          <div class="grid">
+            <div class="field"><label class="req">分类名称</label><input v-model="catForm.name" placeholder="如：雨具"></div>
+            <div class="field"><label>排序</label><input v-model.number="catForm.sort_order" type="number"></div>
+          </div>
+          <div class="btn-row"><button class="btn" @click="addCategory">新增分类</button></div>
+        </div>
+        <div class="table-wrap" v-if="adminCategories.length">
+          <table>
+            <thead><tr><th>ID</th><th>名称</th><th>排序</th></tr></thead>
+            <tbody>
+              <tr v-for="c in adminCategories" :key="c.id"><td>#{{ c.id }}</td><td>{{ c.name }}</td><td>{{ c.sort_order }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty" v-else>暂无分类。</div>
+      </section>
+
+      <!-- ============ 14. C · 地点字典维护（契约 #28） ============ -->
+      <section v-if="view === 'adminLocations'">
+        <h2>地点字典维护</h2>
+        <p class="sub">契约 #28 · <span class="mono">GET / POST /admin/dict/locations</span></p>
+        <div class="card">
+          <div class="grid">
+            <div class="field"><label class="req">地点名称</label><input v-model="locForm.name" placeholder="如：实验楼"></div>
+            <div class="field"><label>排序</label><input v-model.number="locForm.sort_order" type="number"></div>
+          </div>
+          <div class="btn-row"><button class="btn" @click="addLocation">新增地点</button></div>
+        </div>
+        <div class="table-wrap" v-if="adminLocations.length">
+          <table>
+            <thead><tr><th>ID</th><th>名称</th><th>排序</th></tr></thead>
+            <tbody>
+              <tr v-for="l in adminLocations" :key="l.id"><td>#{{ l.id }}</td><td>{{ l.name }}</td><td>{{ l.sort_order }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty" v-else>暂无地点。</div>
+      </section>
+
+      <!-- ============ 15. C · 操作日志（契约 #30） ============ -->
+      <section v-if="view === 'adminLogs'">
+        <h2>操作日志</h2>
+        <p class="sub">契约 #30 · <span class="mono">GET /admin/audit-logs</span>、<span class="mono">GET /admin/export/claims.csv</span></p>
+        <div class="card">
+          <div class="btn-row" style="margin-top:0">
+            <input v-model="logEntity" placeholder="按 entity 过滤（user / claim / category …）" style="flex:1;min-width:200px;border:1px solid #bcc7d6;border-radius:5px;padding:9px 11px" @keyup.enter="loadAdminLogs">
+            <button class="btn" @click="loadAdminLogs">刷新</button>
+            <button class="btn gray" @click="logEntity='';loadAdminLogs()">清空过滤</button>
+            <button class="btn ghost" @click="exportClaims">导出认领单 CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap" v-if="adminLogs.length">
+          <table>
+            <thead><tr><th>ID</th><th>操作者</th><th>对象</th><th>动作</th><th>说明</th><th>时间</th></tr></thead>
+            <tbody>
+              <tr v-for="a in adminLogs" :key="a.id">
+                <td>#{{ a.id }}</td><td>#{{ a.actor_id }}</td>
+                <td>{{ a.entity }} / {{ a.entity_id }}</td>
+                <td><span class="tag tag-purple">{{ a.action }}</span></td>
+                <td>{{ show(a.detail) }}</td>
+                <td class="small">{{ show(a.created_at) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty" v-else>暂无日志（管理员的操作会实时写入）。</div>
       </section>
 
     </div>

@@ -40,7 +40,7 @@ uvicorn main:app --reload
 │       ├── vue.global.prod.js     Vue 3.5.13 本地运行时（禁止改 CDN）
 │       └── LICENSE-vue.txt        MIT 许可
 ├── screenshots/                   演示截图（1440×900，均为虚构种子数据）
-├── main.py                        +3 行 import、+8 行静态挂载，业务逻辑未动
+├── main.py                        FastAPI 入口：A/B 主链 + C 端后台管理接口（契约 #25-30，super_admin 专用）
 ├── models.py / service.py / state_machine.py / smoke_test.py
 ├── requirements.txt
 └── README.md
@@ -52,7 +52,7 @@ uvicorn main:app --reload
 |---|---|---|
 | `stu001` / `stu002` | `student` | A 学生端：招领列表、拾获登记、物品详情、认领申请、我的认领单、流水与通知 |
 | `reviewer001` | `reviewer` | B 审核端：审核队列、认领单详情、身份核验、交接确认、流水与通知 |
-| `super001` | `super_admin` | C 占位页（契约 #25-30 已设计、原型未实现，不放假数据） |
+| `super001` | `super_admin` | C 后台管理端（契约 #25-30 已实现：数据看板 / 用户管理 / 分类·地点字典维护 / 操作日志 / 认领单 CSV 导出） |
 
 角色值只有 `student` / `reviewer` / `super_admin`，`admin` 已废弃。
 
