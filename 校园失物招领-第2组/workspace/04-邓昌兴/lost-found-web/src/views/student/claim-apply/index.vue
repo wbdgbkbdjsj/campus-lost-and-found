@@ -82,7 +82,7 @@ async function submit() {
       found_item_id: itemId,
       proof: form.proof.trim(),
       description: form.description?.trim() || undefined,
-      contact: form.contact.trim()
+      contact: form.contact?.trim() || undefined
     })
     ElMessage.success(`认领申请已提交，单号 #${claim.id}，当前状态：${claim.status_text}`)
     router.replace('/student/my-claims')
