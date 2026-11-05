@@ -26,47 +26,47 @@ SKIP_EXTS = {'.db', '.pyc', '.class', '.jar', '.war', '.log', '.tmp'}
 # ---------- 映射表 ----------
 # 目录 → 目录：整目录复制
 DIR_MAP = {
-    # ---- src：三块源码实体 ----
-    'src/lost-found-prototype': '02-李子研/05_源码',
-    'src/lost-found-web': '04-邓昌兴/lost-found-web',
-    'src/lost-found-server': '03_批次0-邓昌兴/lost-found-server',
+    # ---- src：三块源码实体（源已移入 workspace/）----
+    'src/lost-found-prototype': 'workspace/02-李子研/05_源码',
+    'src/lost-found-web': 'workspace/04-邓昌兴/lost-found-web',
+    'src/lost-found-server': 'workspace/03_批次0-邓昌兴/lost-found-server',
     # ---- model：设计模型（9 张）与界面原型（6 张真截图）----
-    'model/设计模型': '02-李子研/设计模型',
-    'model/界面原型': '02-李子研/05_源码/screenshots',
+    'model/设计模型': 'workspace/02-李子研/设计模型',
+    'model/界面原型': 'workspace/02-李子研/05_源码/screenshots',
 }
 
 # 文件 → 文件：单文件复制
 FILE_MAP = {
     # ---- model：需求 4 图 ----
-    'model/需求模型/用例图.md': '01_批次0-阴亮/用例图.md',
-    'model/需求模型/需求4图-补齐3张.md': '04_图表与交叉材料/需求4图-补齐3张.md',
+    'model/需求模型/用例图.md': 'workspace/01_批次0-阴亮/用例图.md',
+    'model/需求模型/需求4图-补齐3张.md': 'workspace/04_图表与交叉材料/需求4图-补齐3张.md',
     # ---- doc：5 项必交物相关 ----
-    'doc/01-软件需求规格说明书.md': '03_六份交付材料/需求说明书.md',
-    'doc/02-软件设计规格说明书.md': '02-李子研/设计说明书.md',
-    'doc/03-总体设计报告.md': '03_六份交付材料/总体设计报告.md',
-    'doc/04-测试报告.md': '02-欧阳昊添/测试报告.md',
-    'doc/04a-测试报告-三层测试回填块.md': '04_图表与交叉材料/测试报告-三层测试回填块.md',
-    'doc/04b-测试执行记录-本机复跑24项全绿.txt': '04_图表与交叉材料/测试执行记录-本机复跑24项全绿.txt',
-    'doc/05-测试用例表.md': '02-欧阳昊添/测试用例表.md',
-    'doc/06-情况记录表.md': '02-欧阳昊添/情况记录表.md',
-    'doc/07-产品宣传彩页.pdf': '07_提交包/产品宣传彩页.pdf',
-    'doc/08-实践工作自评报告-模板.md': '00_任务总览/实践工作自评报告-模板.md',
+    'doc/01-软件需求规格说明书.md': 'workspace/03_六份交付材料/需求说明书.md',
+    'doc/02-软件设计规格说明书.md': 'workspace/02-李子研/设计说明书.md',
+    'doc/03-总体设计报告.md': 'workspace/03_六份交付材料/总体设计报告.md',
+    'doc/04-测试报告.md': 'workspace/02-欧阳昊添/测试报告.md',
+    'doc/04a-测试报告-三层测试回填块.md': 'workspace/04_图表与交叉材料/测试报告-三层测试回填块.md',
+    'doc/04b-测试执行记录-本机复跑24项全绿.txt': 'workspace/04_图表与交叉材料/测试执行记录-本机复跑24项全绿.txt',
+    'doc/05-测试用例表.md': 'workspace/02-欧阳昊添/测试用例表.md',
+    'doc/06-情况记录表.md': 'workspace/02-欧阳昊添/情况记录表.md',
+    'doc/07-产品宣传彩页.pdf': 'workspace/07_提交包/产品宣传彩页.pdf',
+    'doc/08-实践工作自评报告-模板.md': 'workspace/00_任务总览/实践工作自评报告-模板.md',
     # ---- doc：口径与交叉材料 ----
-    'doc/10-术语表-v1.md': '03_六份交付材料/术语表-v1.md',
-    'doc/11-全组约定与编号总则-v1.md': '03_六份交付材料/全组约定与编号总则-v1.md',
-    'doc/12-接口契约-v1.md': '02-李子研/api-contract-v1.md',
-    'doc/13-需求-设计对照表.md': '02-李子研/需求-设计对照表.md',
-    'doc/14-接口-代码检查表.md': '02-李子研/接口-代码检查表.md',
-    'doc/15-老师指导书-提交要求核对与整改清单.md': '00_任务总览/老师指导书-提交要求核对与整改清单.md',
-    'doc/16-今夜派工单.md': '00_任务总览/今夜派工单-补齐必交物与演示.md',
-    'doc/17-工作量比例-proposal.md': '00_任务总览/工作量比例-proposal.md',
+    'doc/10-术语表-v1.md': 'workspace/03_六份交付材料/术语表-v1.md',
+    'doc/11-全组约定与编号总则-v1.md': 'workspace/03_六份交付材料/全组约定与编号总则-v1.md',
+    'doc/12-接口契约-v1.md': 'workspace/02-李子研/api-contract-v1.md',
+    'doc/13-需求-设计对照表.md': 'workspace/02-李子研/需求-设计对照表.md',
+    'doc/14-接口-代码检查表.md': 'workspace/02-李子研/接口-代码检查表.md',
+    'doc/15-老师指导书-提交要求核对与整改清单.md': 'workspace/00_任务总览/老师指导书-提交要求核对与整改清单.md',
+    'doc/16-今夜派工单.md': 'workspace/00_任务总览/今夜派工单-补齐必交物与演示.md',
+    'doc/17-工作量比例-proposal.md': 'workspace/00_任务总览/工作量比例-proposal.md',
     # ---- doc：演示与答辩 ----
-    'doc/20-演示脚本.md': '06_答辩与演示/演示脚本-v0.md',
-    'doc/21-答辩题库.md': '06_答辩与演示/答辩题库.md',
-    'doc/22-PPT大纲.md': '02-欧阳昊添/PPT大纲.md',
-    'doc/23-PPT故事线.md': '06_答辩与演示/PPT故事线.md',
-    'doc/24-答辩讲稿框架.md': '06_答辩与演示/答辩讲稿框架.md',
-    'doc/25-答辩PPT-第2组.pptx': '02-欧阳昊添/答辩PPT-第2组.pptx',
+    'doc/20-演示脚本.md': 'workspace/06_答辩与演示/演示脚本-v0.md',
+    'doc/21-答辩题库.md': 'workspace/06_答辩与演示/答辩题库.md',
+    'doc/22-PPT大纲.md': 'workspace/02-欧阳昊添/PPT大纲.md',
+    'doc/23-PPT故事线.md': 'workspace/06_答辩与演示/PPT故事线.md',
+    'doc/24-答辩讲稿框架.md': 'workspace/06_答辩与演示/答辩讲稿框架.md',
+    'doc/25-答辩PPT-第2组.pptx': 'workspace/02-欧阳昊添/答辩PPT-第2组.pptx',
 }
 
 
