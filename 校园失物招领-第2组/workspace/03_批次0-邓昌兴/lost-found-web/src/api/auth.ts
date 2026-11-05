@@ -2,11 +2,12 @@ import request from '@/utils/request'
 import type { LoginResult, LoginUser } from '@/types'
 
 /**
- * 认证接口（邓昌兴负责）
- * TODO(契约 v0)：路径与字段以《api-contract-v0.md》为准
+ * 认证接口（契约 v1 #2-#3）
+ * 登录参数是学号 student_no，不是 username。
+ * 原型没有 logout 接口：退出登录只清理本地状态，见 stores/auth.ts。
  */
 export interface LoginPayload {
-  username: string
+  student_no: string
   password: string
 }
 
@@ -15,9 +16,5 @@ export function login(data: LoginPayload) {
 }
 
 export function getProfile() {
-  return request.get<LoginUser>('/auth/profile')
-}
-
-export function logout() {
-  return request.post<void>('/auth/logout')
+  return request.get<LoginUser>('/auth/me')
 }

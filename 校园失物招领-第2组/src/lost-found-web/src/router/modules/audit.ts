@@ -1,7 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import type { MenuItem } from '@/types'
-
-export const AUDITOR_ROLE = 'AUDITOR'
+import { ROLE_REVIEWER } from '@/utils/constants'
 
 const children: RouteRecordRaw[] = [
   {
@@ -55,7 +54,7 @@ const auditRoutes: RouteRecordRaw[] = [
     path: '/audit',
     component: () => import('@/layouts/AuditLayout.vue'),
     redirect: '/audit/workbench',
-    meta: { roles: [AUDITOR_ROLE] },
+    meta: { roles: [ROLE_REVIEWER] },
     children
   }
 ]

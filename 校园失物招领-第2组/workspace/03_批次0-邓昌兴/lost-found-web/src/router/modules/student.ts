@@ -1,7 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import type { MenuItem } from '@/types'
-
-export const STUDENT_ROLE = 'STUDENT'
+import { ROLE_STUDENT } from '@/utils/constants'
 
 const children: RouteRecordRaw[] = [
   {
@@ -68,7 +67,7 @@ const studentRoutes: RouteRecordRaw[] = [
     path: '/student',
     component: () => import('@/layouts/StudentLayout.vue'),
     redirect: '/student/home',
-    meta: { roles: [STUDENT_ROLE] },
+    meta: { roles: [ROLE_STUDENT] },
     children
   }
 ]

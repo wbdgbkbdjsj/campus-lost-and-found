@@ -5,13 +5,12 @@ export interface MenuItem {
   icon?: string
 }
 
-/** 登录用户（字段以契约定稿为准，先保留最小集） */
+/** 登录用户（契约 v1：user 表字段） */
 export interface LoginUser {
   id: number
-  username: string
-  nickname: string
+  student_no: string
+  name: string
   role: string
-  avatar?: string
 }
 
 /** 登录返回 */
@@ -20,25 +19,25 @@ export interface LoginResult {
   user: LoginUser
 }
 
-/** 后端统一响应：{ code, message, data } */
+/** 后端统一响应：{ code, message, data }，失败时可能带 detail */
 export interface ApiResult<T = unknown> {
   code: number
   message: string
   data: T
+  detail?: string
 }
 
-/** 分页结果 */
-export interface PageResult<T> {
-  records: T[]
+/** 列表结果（FastAPI 原型统一返回 { total, items }） */
+export interface ListResult<T> {
   total: number
-  current: number
-  size: number
+  items: T[]
 }
 
-/** 分页查询参数基类 */
+/** 分页 / 查询参数（后端使用 page、size，从 1 开始） */
 export interface PageQuery {
-  current?: number
+  page?: number
   size?: number
+  keyword?: string
   [key: string]: unknown
 }
 
