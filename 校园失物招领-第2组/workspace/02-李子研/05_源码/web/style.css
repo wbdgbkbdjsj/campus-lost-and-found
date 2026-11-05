@@ -15,6 +15,8 @@
   --green-soft: #e8f6ed;
   --amber: #8a5a00;
   --amber-soft: #fff5dd;
+  --purple: #6b2fb3;
+  --purple-soft: #f1e9fb;
 }
 
 * { box-sizing: border-box; }
@@ -153,6 +155,12 @@ tr:nth-child(even) td { background: #fafbfd; }
 .tag-red { background: var(--red-soft); border-color: #e9a5a5; color: var(--red); }
 .tag-amber { background: var(--amber-soft); border-color: #ecd39a; color: var(--amber); }
 .tag-gray { background: #eef1f5; border-color: #d5dbe4; color: var(--muted); }
+.tag-purple { background: var(--purple-soft); border-color: #d4b9ef; color: var(--purple); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin: 10px 0 18px; }
+.stat { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; text-align: center; }
+.stat b { display: block; font-size: 26px; color: var(--blue-dark); line-height: 1.2; }
+.stat span { font-size: 13px; color: var(--muted); }
 .code { font-family: Consolas, "Courier New", monospace; font-size: 15px; color: var(--muted); }
 
 /* ---------- 登录 ---------- */

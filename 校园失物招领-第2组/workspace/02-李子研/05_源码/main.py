@@ -6,6 +6,8 @@
 启动： uvicorn main:app --reload
 文档： http://127.0.0.1:8000/docs
 """
+import csv
+import io
 import os
 import secrets
 from datetime import datetime
@@ -14,14 +16,14 @@ from typing import Optional
 from fastapi import Depends, FastAPI, Header, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 import service
 import state_machine as sm
-from models import (Category, Claim, FoundItem, Location, LostItem, Notification,
+from models import (AuditLog, Category, Claim, FoundItem, Location, LostItem, Notification,
                     ReviewRecord, SessionLocal, User, hash_pwd, init_db, now)
 
 app = FastAPI(title="校园失物招领与认领审核系统 · 审核状态流原型", version="1.1.0")
@@ -74,6 +76,18 @@ def reviewer_only(user: User = Depends(current_user)) -> User:
     return user
 
 
+def super_admin_only(user: User = Depends(current_user)) -> User:
+    if user.role != "super_admin":
+        raise sm.ForbiddenError("需要超级管理员(super_admin)权限")
+    return user
+
+
+def write_audit(db: Session, actor: User, entity: str, entity_id: int, action: str, detail: str = ""):
+    db.add(AuditLog(actor_id=actor.id, entity=entity, entity_id=entity_id,
+                    action=action, detail=detail))
+    db.commit()
+
+
 # ---------------- 请求体 ----------------
 class LoginIn(BaseModel):
     student_no: str
@@ -120,6 +134,20 @@ class VerifyIn(BaseModel):
 
 class ExpireIn(BaseModel):
     now: Optional[datetime] = None
+
+
+class UserStatusIn(BaseModel):
+    status: str  # ACTIVE | DISABLED
+
+
+class CategoryIn(BaseModel):
+    name: str
+    sort_order: int = 0
+
+
+class LocationIn(BaseModel):
+    name: str
+    sort_order: int = 0
 
 
 # ---------------- 序列化 ----------------
@@ -373,6 +401,163 @@ def notifications(db: Session = Depends(get_db), user: User = Depends(current_us
         for n in rows]})
 
 
+# ---------------- 后台管理 C 端（契约 #25-30，super_admin 专用） ----------------
+# #25 用户列表
+@app.get("/api/v1/admin/users")
+def admin_list_users(keyword: str = "", page: int = 1, size: int = 20,
+                     admin: User = Depends(super_admin_only), db: Session = Depends(get_db)):
+    q = db.query(User)
+    if keyword:
+        q = q.filter(User.student_no.contains(keyword) | User.name.contains(keyword))
+    total = q.count()
+    rows = q.order_by(User.id).offset((page - 1) * size).limit(size).all()
+    return ok({"total": total, "items": [{
+        "id": u.id, "student_no": u.student_no, "name": u.name,
+        "role": u.role, "status": u.status, "phone": u.phone,
+        "created_at": u.created_at.strftime("%Y-%m-%d %H:%M:%S") if u.created_at else None
+    } for u in rows]})
+
+
+# #26 启用 / 停用账号
+@app.put("/api/v1/admin/users/{uid}/status")
+def admin_set_user_status(uid: int, body: UserStatusIn,
+                          admin: User = Depends(super_admin_only), db: Session = Depends(get_db)):
+    if body.status not in ("ACTIVE", "DISABLED"):
+        raise sm.ValidationFailed("status 仅允许 ACTIVE / DISABLED")
+    u = db.get(User, uid)
+    if u is None:
+        raise sm.NotFound(f"user#{uid} 不存在")
+    if u.id == admin.id:
+        raise sm.ValidationFailed("不能修改自身账号状态")
+    if u.role == "super_admin" and body.status == "DISABLED":
+        raise sm.ValidationFailed("不能停用其他超级管理员账号")
+    u.status = body.status
+    db.commit()
+    write_audit(db, admin, "user", u.id, "SET_STATUS", f"status={body.status}")
+    return ok({"id": u.id, "status": u.status}, "账号状态已更新")
+
+
+# #27 分类字典维护
+@app.get("/api/v1/admin/dict/categories")
+def admin_list_categories(admin: User = Depends(super_admin_only), db: Session = Depends(get_db)):
+    rows = db.query(Category).order_by(Category.sort_order).all()
+    return ok([{"id": r.id, "name": r.name, "sort_order": r.sort_order} for r in rows])
+
+
+@app.post("/api/v1/admin/dict/categories")
+def admin_create_category(body: CategoryIn,
+                          admin: User = Depends(super_admin_only), db: Session = Depends(get_db)):
+    name = body.name.strip()
+    if not name:
+        raise sm.ValidationFailed("分类名称不能为空")
+    if db.query(Category).filter(Category.name == name).first():
+        raise sm.ValidationFailed("分类名称已存在")
+    c = Category(name=name, sort_order=body.sort_order)
+    db.add(c); db.commit(); db.refresh(c)
+    write_audit(db, admin, "category", c.id, "CREATE", f"name={c.name}")
+    return ok({"id": c.id, "name": c.name, "sort_order": c.sort_order}, "分类已新增")
+
+
+# #28 地点字典维护
+@app.get("/api/v1/admin/dict/locations")
+def admin_list_locations(admin: User = Depends(super_admin_only), db: Session = Depends(get_db)):
+    rows = db.query(Location).order_by(Location.sort_order).all()
+    return ok([{"id": r.id, "name": r.name, "sort_order": r.sort_order} for r in rows])
+
+
+@app.post("/api/v1/admin/dict/locations")
+def admin_create_location(body: LocationIn,
+                          admin: User = Depends(super_admin_only), db: Session = Depends(get_db)):
+    name = body.name.strip()
+    if not name:
+        raise sm.ValidationFailed("地点名称不能为空")
+    if db.query(Location).filter(Location.name == name).first():
+        raise sm.ValidationFailed("地点名称已存在")
+    l = Location(name=name, sort_order=body.sort_order)
+    db.add(l); db.commit(); db.refresh(l)
+    write_audit(db, admin, "location", l.id, "CREATE", f"name={l.name}")
+    return ok({"id": l.id, "name": l.name, "sort_order": l.sort_order}, "地点已新增")
+
+
+# #29 统计看板
+@app.get("/api/v1/admin/stats/overview")
+def admin_stats(admin: User = Depends(super_admin_only), db: Session = Depends(get_db)):
+    users = db.query(User).all()
+    u_total = len(users)
+    u_student = sum(1 for u in users if u.role == "student")
+    u_reviewer = sum(1 for u in users if u.role == "reviewer")
+    u_admin = sum(1 for u in users if u.role == "super_admin")
+    u_disabled = sum(1 for u in users if u.status == "DISABLED")
+
+    found = db.query(FoundItem).all()
+    lost = db.query(LostItem).all()
+    f_claimed = sum(1 for i in found if i.status == "CLAIMED")
+    f_registered = sum(1 for i in found if i.status == "REGISTERED")
+
+    claims = db.query(Claim).all()
+    c_total = len(claims)
+    by_status = {}
+    for c in claims:
+        by_status[c.status] = by_status.get(c.status, 0) + 1
+    completed = by_status.get("COMPLETED", 0)
+    expired = by_status.get("EXPIRED", 0)
+    pending = by_status.get("SUBMITTED", 0) + by_status.get("PENDING_INFO", 0)
+    completion_rate = round(completed / c_total * 100, 1) if c_total else 0.0
+    timeout_rate = round(expired / c_total * 100, 1) if c_total else 0.0
+
+    approve_recs = db.query(ReviewRecord).filter(ReviewRecord.action == "APPROVE").all()
+    durations = []
+    for r in approve_recs:
+        c = db.get(Claim, r.claim_id)
+        if c and c.submitted_at and r.created_at:
+            durations.append((r.created_at - c.submitted_at).total_seconds() / 60)
+    avg_review_minutes = round(sum(durations) / len(durations), 1) if durations else 0.0
+
+    return ok({
+        "users": {"total": u_total, "student": u_student, "reviewer": u_reviewer,
+                  "admin": u_admin, "disabled": u_disabled},
+        "items": {"found_total": len(found), "lost_total": len(lost),
+                  "found_claimed": f_claimed, "found_registered": f_registered},
+        "claims": {"total": c_total, "by_status": by_status,
+                   "completed": completed, "expired": expired, "pending": pending},
+        "rates": {"completion_rate": completion_rate, "timeout_rate": timeout_rate,
+                  "avg_review_minutes": avg_review_minutes},
+        "audit_total": db.query(AuditLog).count()
+    })
+
+
+# #30 操作日志 + 认领单 CSV 导出
+@app.get("/api/v1/admin/audit-logs")
+def admin_audit_logs(entity: str = "", page: int = 1, size: int = 30,
+                     admin: User = Depends(super_admin_only), db: Session = Depends(get_db)):
+    q = db.query(AuditLog)
+    if entity:
+        q = q.filter(AuditLog.entity == entity)
+    total = q.count()
+    rows = q.order_by(AuditLog.id.desc()).offset((page - 1) * size).limit(size).all()
+    return ok({"total": total, "items": [{
+        "id": a.id, "actor_id": a.actor_id, "entity": a.entity,
+        "entity_id": a.entity_id, "action": a.action, "detail": a.detail,
+        "created_at": a.created_at.strftime("%Y-%m-%d %H:%M:%S") if a.created_at else None
+    } for a in rows]})
+
+
+@app.get("/api/v1/admin/export/claims.csv")
+def admin_export_claims(admin: User = Depends(super_admin_only), db: Session = Depends(get_db)):
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["claim_id", "found_item_id", "applicant_id", "reviewer_id",
+                "status", "submitted_at", "updated_at"])
+    for c in db.query(Claim).order_by(Claim.id).all():
+        w.writerow([c.id, c.found_item_id, c.applicant_id, c.reviewer_id or "",
+                    c.status,
+                    c.submitted_at.strftime("%Y-%m-%d %H:%M:%S") if c.submitted_at else "",
+                    c.updated_at.strftime("%Y-%m-%d %H:%M:%S") if c.updated_at else ""])
+    data = buf.getvalue().encode("utf-8-sig")
+    return StreamingResponse(iter([data]), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=claims.csv"})
+
+
 # ---------------- 启动 + 种子数据 ----------------
 @app.on_event("startup")
 def bootstrap():
@@ -381,6 +566,20 @@ def bootstrap():
     try:
         if db.query(User).count() == 0:
             seed(db)
+        # 已有库但审计表为空时，补几条代表性日志，避免演示时空白
+        if db.query(AuditLog).count() == 0 and db.query(User).count() > 0:
+            super1 = db.query(User).filter(User.role == "super_admin").first()
+            reviewer = db.query(User).filter(User.role == "reviewer").first()
+            first_claim = db.query(Claim).order_by(Claim.id).first()
+            if super1 and reviewer and first_claim:
+                db.add_all([
+                    AuditLog(actor_id=super1.id, entity="system", entity_id=0,
+                             action="INIT", detail="系统初始化，载入种子数据"),
+                    AuditLog(actor_id=reviewer.id, entity="claim",
+                             entity_id=first_claim.id, action="REVIEW_ACCEPT",
+                             detail="审核员接单处理"),
+                ])
+                db.commit()
     finally:
         db.close()
 
@@ -452,6 +651,12 @@ def seed(db: Session):
                      from_status="SUBMITTED", to_status="UNDER_REVIEW", comment=""),
         ReviewRecord(claim_id=c3.id, reviewer_id=reviewer.id, action="APPROVE",
                      from_status="UNDER_REVIEW", to_status="APPROVED", comment="凭证一致"),
+        AuditLog(actor_id=super1.id, entity="system", entity_id=0, action="INIT",
+                 detail="系统初始化，载入种子数据"),
+        AuditLog(actor_id=reviewer.id, entity="claim", entity_id=c1.id, action="REVIEW_ACCEPT",
+                 detail="审核员接单处理"),
+        AuditLog(actor_id=reviewer.id, entity="claim", entity_id=c3.id, action="REVIEW_APPROVE",
+                 detail="凭证一致，审核通过"),
     ])
     db.commit()
 
